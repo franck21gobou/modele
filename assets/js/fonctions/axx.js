@@ -5,23 +5,23 @@ const axx = async (
   globalLoad = false,
   reqLog = false
 ) => {
-  if (globalLoad) {
-    $("#preloader").html(`
-    <div class="row" style="position:fixed;z-index:9999;width:100%;height:100vh;background: linear-gradient(to right,#7474bf,#348ac7);opacity:0.5">
-      <div class="col-md-12">
-        <div class="preloader1">
-          <div class="loader loader-inner-1">
-            <div class="loader loader-inner-2">
-              <div class="loader loader-inner-3">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>`);
-  }
+  if (globalLoad) loader("start");
+  else miniLoader("start");
+
   $(`#${btnLoad}`).attr("disabled", true);
-  let resp = await axios.post(api, formDatas, {
+
+  let formData = new FormData();
+  formDatas.map((fm) => {
+    if (!fm.file) formData.append(fm.key, fm.value);
+    else {
+      //console.log(fm);
+      Object.keys(fm.file).map((key) => {
+        formData.append(fm.key, fm.file[key]);
+      });
+    }
+  });
+
+  let resp = await axios.post(lienAPI + "/" + api, formData, {
     headers: {
       auth: $.cookie(_i_My_Cookies.connexion),
       "Content-Type":
@@ -32,17 +32,21 @@ const axx = async (
 
   $(`#${btnLoad}`).attr("disabled", false);
   try {
-    !resp.data.result && alertify.error(resp.data.infos);
+    !resp.data.result && notifyMy2(resp.data.infos);
+    console.log(resp.data);
+
     if (reqLog && !resp.data.is_auth) {
       alert("Session expirée");
       deconnectNow();
     }
   } catch (error) {
     console.log(error);
-    alertify.error(error);
+    console.log(resp.data);
+    notifyMy2(error);
   }
 
-  $("#preloader").html("");
+  miniLoader("end");
+  loader("end");
 
   return resp.data;
 };
