@@ -9,6 +9,7 @@ const deconnectNow = () => {
     // supprimer les cookies
     $.cookie(value, "", { expires: -1 });
     $.localStorage(value, null);
+	$.localStorage(_i_My_Storage.menu, null);
   });
 
   window.location.replace(_i_loginPage);
